@@ -4,3 +4,5 @@
    then see what logic errors might be lurking
 
 3. Created a short cut list of interactive objects (eg search button) that will be dealt with regularly for ease of use.
+
+4. Created a "state" object to help keep track of what's being handled

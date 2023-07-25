@@ -1,3 +1,7 @@
+export const state = {
+  pageNumber: null,
+  loaded: {},
+}
 
 export const BOOKS_PER_PAGE = 36;
 
