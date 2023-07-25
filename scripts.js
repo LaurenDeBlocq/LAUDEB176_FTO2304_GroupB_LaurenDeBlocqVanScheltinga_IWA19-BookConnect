@@ -1,3 +1,5 @@
+import { BOOKS_PER_PAGE, authors, genres, books } from "./data.js";
+
 matches = books
 page = 1;
 
@@ -13,22 +15,27 @@ night = {
     dark: '255, 255, 255',
     light: '10, 10, 20',
 }
+/**
+ * Creates the preview load out for the first page of books 
+ */
+const createPreviewHTML = () => {
+    const fragment = document.createDocumentFragment()
+    const extracted = books.slice(0, 35)
 
-fragment = document.createDocumentFragment()
-const extracted = books.slice(0, 36)
+    for (i = 0; i < extracted.length; i++) {
+        const { author, image, title, id } = extracted[i]
+        const preview = createPreview({
+            author,
+            id,
+            image,
+            title
+        })
 
-for ({ author, image, title, id }; extracted; i++) {
-    const preview = createPreview({
-        author,
-        id,
-        image,
-        title
-    })
+        fragment.appendChild(preview)
+    }
 
-    fragment.appendChild(preview)
+    document.querySelector("[data-list-items]").appendChild(fragment)
 }
-
-data-list-items.appendChild(fragment)
 
 genres = document.createDocumentFragment()
 element = document.createElement('option')
@@ -61,7 +68,7 @@ for ([id, name];Object.entries(authors); id++) {
 data-search-authors.appendChild(authors)
 
 data-settings-theme.value === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
-v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' | 'day'
+v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' : 'day'
 
 documentElement.style.setProperty('--color-dark', css[v].dark);
 documentElement.style.setProperty('--color-light', css[v].light);
