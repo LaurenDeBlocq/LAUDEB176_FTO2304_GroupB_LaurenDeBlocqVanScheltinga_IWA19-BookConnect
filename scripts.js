@@ -37,6 +37,11 @@ const createPreviewHTML = () => {
     document.querySelector("[data-list-items]").appendChild(fragment)
 }
 
+/**
+ * Pretty sure this section is about dealing with the "Filter by genre" feature.
+ * Seems like the idea is to make the list of genres and not so much the actual
+ * search functionality.
+ */
 genres = document.createDocumentFragment()
 element = document.createElement('option')
 element.value = 'any'
@@ -52,6 +57,9 @@ for ([id, name]; Object.entries(genres); i++) {
 
 data-search-genres.appendChild(genres)
 
+/**
+ * Same as above but for the "Filter by Author" feature.
+ */
 authors = document.createDocumentFragment()
 element = document.createElement('option')
 element.value = 'any'
@@ -67,6 +75,7 @@ for ([id, name];Object.entries(authors); id++) {
 
 data-search-authors.appendChild(authors)
 
+/** */
 data-settings-theme.value === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
 v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' : 'day'
 
