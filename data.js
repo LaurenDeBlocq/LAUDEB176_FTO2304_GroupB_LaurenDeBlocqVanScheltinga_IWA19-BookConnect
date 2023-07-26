@@ -1,3 +1,8 @@
+/**
+ * The state keeps track of what books have been loaded, as well as what page
+ * number the user is on. Page Number is used to extract books to be loaded in 
+ * createPage() in the scripts file.
+ */
 export const state = {
   pageNumber: null,
   loaded: {},

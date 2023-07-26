@@ -17,34 +17,54 @@ if (!books && !Array.isArray(books)) throw new Error('Source required')
 //     light: '10, 10, 20',
 // }
 
-/** Creates the preview data to be used to make the related HTML */
-
+/* -------------------- Functions which affect the page -------------------- */
 
 /**
  * Creates the load out of new books dependant on what page the user is on. 
  */
 const createPage = () => {
     const startPosition = (state.pageNumber - 1) * BOOKS_PER_PAGE
-    const endPosition = startPosition + BOOKS_PER_PAGE
-
+    const endPosition = startPosition + BOOKS_PER_PAGE - 1
+    
     const fragment = document.createDocumentFragment()
-    const extracted = books.slice(startPosition, endPosition)
-    console.log(extracted);
+    const extracted = books.slice(startPosition, endPosition + 1)
 
     
-    for (let i = startPosition; i < endPosition; i++) {
+    for (let i = 0; i < extracted.length; i++) {
         const { author, image, title, id } = extracted[i]
         state.loaded[id] = {id, image, author, title}
         const preview = createPreviewHtml(state.loaded[id])
-
+  
         fragment.appendChild(preview)
     }
 
     state.pageNumber += 1
-    document.querySelector("[data-list-items]").appendChild(fragment)
+    html.list.items.appendChild(fragment)
 }
 
+
+/**
+ * Fills in the text on the list button.
+ */
+const listButtonText = () => {
+    html.list.button.innerHTML = `
+    Show More <span class="list__remaining">(${books.length - Object.keys(state.loaded).length})</span>
+    `
+}
+
+/* -------------------- ON PAGE LOAD --------------------*/
 createPage()
+listButtonText()
+
+
+/* ------------------- EVENT HANDLERS ------------------- */
+const handleListButton = () =>{
+    createPage()
+    listButtonText()
+}
+
+html.list.button.addEventListener('click', handleListButton)
+
 
 /**
  * Pretty sure this section is about dealing with the "Filter by genre" feature.
@@ -110,11 +130,7 @@ createPage()
 // html.data.settings.form.addEventListener('submit', handleSettingsSubmit())
 // data-list-close.click() { data-list-active.open === false }
 
-// data-list-button.click() {
-//     document.querySelector([data-list-items]).appendChild(createPreviewsFragment(matches, page x BOOKS_PER_PAGE, {page + 1} x BOOKS_PER_PAGE]))
-//     actions.list.updateRemaining()
-//     page = page + 1
-// }
+
 
 // data-header-search.click() {
 //     data-search-overlay.open === true ;

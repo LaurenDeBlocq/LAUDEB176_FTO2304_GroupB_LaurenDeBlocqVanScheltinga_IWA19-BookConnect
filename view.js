@@ -28,7 +28,6 @@ export const html = {
         authors: document.querySelector('[data-search-authors]'),
         genres: document.querySelector('[data-search-genres]'),
         title: document.querySelector('[data-search-title]'),
-//        document.querySelector('[]'),
     },
     settings: {
         button: document.querySelector('[data-header-settings]'),
@@ -44,10 +43,9 @@ export const html = {
     books: {},
 }
 
-/** Creating the options in the list for the books */
-
-
-/** Creates the HTML from the preview data */
+/** 
+ * Creates the HTML for a single list item from the preview data provided. 
+ */
 export const createPreviewHtml = (preview) => {
     const { author, id, title, image } = preview
 
