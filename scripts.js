@@ -58,13 +58,26 @@ listButtonText()
 
 
 /* ------------------- EVENT HANDLERS ------------------- */
-const handleListButton = () =>{
+const handleListButton = (event) =>{
     createPage()
     listButtonText()
 }
 
-html.list.button.addEventListener('click', handleListButton)
+const handleSearchToggle = (event) =>{
+    html.search.overlay.toggleAttribute('open')
+}
 
+const handleSettingsToggle = (event) =>{
+    html.settings.overlay.toggleAttribute('open')
+}
+
+html.list.button.addEventListener('click', handleListButton)
+html.search.button.addEventListener('click', handleSearchToggle)
+html.search.cancel.addEventListener('click', handleSearchToggle)
+
+html.settings.button.addEventListener('click', handleSettingsToggle)
+html.settings.cancel.addEventListener('click', handleSettingsToggle)
+// html.settings.form.addEventListener('submit', handleSettingsSubmit)
 
 /**
  * Pretty sure this section is about dealing with the "Filter by genre" feature.
@@ -125,9 +138,7 @@ html.list.button.addEventListener('click', handleListButton)
 //  * create some event listeners to toggle dialogues.
 //  */
 
-// html.data.search.cancel.addEventListener('click', handleSearchToggle())
-// html.data.settings.cancel.addEventListener('click', handleSettingsToggle())
-// html.data.settings.form.addEventListener('submit', handleSettingsSubmit())
+
 // data-list-close.click() { data-list-active.open === false }
 
 
