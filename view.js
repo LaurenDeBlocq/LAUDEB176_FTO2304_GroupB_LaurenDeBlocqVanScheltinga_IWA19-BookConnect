@@ -1,4 +1,4 @@
-import { authors, genres, books } from "./data"
+import { state, authors } from "./data.js"
 
 /**
  * Attempting to recreate the html object from IWA challenge 18. I
@@ -52,25 +52,18 @@ export const createPreviewHtml = (preview) => {
     const { author, id, title, image } = preview
 
     const element = document.createElement('div')
-    element.className = 'list__item'
-    element.dataset = state.loaded[id]
+    element.className = 'preview'
+    element.dataset.id = id
 
     element.innerHTML = /* html */ `
         
-    
-    <div class="item__title" data-item-title>${title}</div>
+    <img class="preview__image" data-preview-image src="${image}"/>
         
-        <dl class="item__details">
-            <div class="item__row">
-                <dt></dt>
-                <dd class="order__value" data-item-table>${table}</dd>
-            </div>
-
-            <div class="order__row">
-                <dt>Ordered:</dt>
-                <dd class="order__value">${hours}:${minutes}</dd>
-            </div>
-        </dl>
+    <div class="preview__info">
+        <div class="preview__title" data-preview-title>${title}</div>
+        
+        <div class="preview__author" data-preview-author>${authors[author]}</div>
+    </div>
     `
 
     return element

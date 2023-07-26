@@ -1,21 +1,21 @@
 import { state, BOOKS_PER_PAGE, authors, genres, books } from "./data.js";
-import { html } from "./view.js";
+import { html, createPreviewHtml } from "./view.js";
 
 const matches = books
 state.pageNumber = 1;
 
 if (!books && !Array.isArray(books)) throw new Error('Source required') 
-if (!range && range.length < 2) throw new Error('Range must be an array with two numbers')
+//if (!range && range.length < 2) throw new Error('Range must be an array with two numbers')
 
-day = {
-    dark: '10, 10, 20',
-    light: '255, 255, 255',
-}
+// day = {
+//     dark: '10, 10, 20',
+//     light: '255, 255, 255',
+// }
 
-night = {
-    dark: '255, 255, 255',
-    light: '10, 10, 20',
-}
+// night = {
+//     dark: '255, 255, 255',
+//     light: '10, 10, 20',
+// }
 
 /** Creates the preview data to be used to make the related HTML */
 
@@ -24,16 +24,18 @@ night = {
  * Creates the load out of new books dependant on what page the user is on. 
  */
 const createPage = () => {
-    const startPosition = (state.pageNumber.value - 1) * 36
-    const endPosition = startPosition + 35
+    const startPosition = (state.pageNumber - 1) * BOOKS_PER_PAGE
+    const endPosition = startPosition + BOOKS_PER_PAGE
 
     const fragment = document.createDocumentFragment()
     const extracted = books.slice(startPosition, endPosition)
+    console.log(extracted);
+
     
-    for (let i = startPosition; i < endPosition + 1; i++) {
+    for (let i = startPosition; i < endPosition; i++) {
         const { author, image, title, id } = extracted[i]
         state.loaded[id] = {id, image, author, title}
-        const preview = createPreview(state.loaded[id])
+        const preview = createPreviewHtml(state.loaded[id])
 
         fragment.appendChild(preview)
     }
@@ -41,6 +43,7 @@ const createPage = () => {
     state.pageNumber += 1
     document.querySelector("[data-list-items]").appendChild(fragment)
 }
+
 createPage()
 
 /**
