@@ -110,7 +110,15 @@ createGenreOptions()
  * and full matches. Returns an array with those matches.
  */
 const titleSearch = (titleValue) =>{
+    const titleArray = []
 
+    for (let i = 0; i < books.length; i++){
+        if (books[i]['title'].toLowerCase().includes(titleValue.toLowerCase())){
+            titleArray.push(books[i])
+        }
+    }
+
+    return titleArray
 }
 
 /**
@@ -145,11 +153,11 @@ const authorSearch = (authorValue) =>{
         if (books[i]['author'] === authorValue){
             authorArray.push(books[i])
         }
-    
     }
     
     return authorArray
 }
+
 
 
 /* ------------------- EVENT HANDLERS ------------------- */
@@ -173,30 +181,57 @@ const handleSearchToggle = (event) =>{
  * 3. If there is a value in the author input, we must loop through the 'author; property in each 
  *    individual books object in the books array and return all books with that author.
  * 
- * Lastly, we must compare the different book objects returned, remove any duplicates and create a 
- * page using those objects
+ * Lastly, we must compare the different book objects returned, and create a 
+ * page using those objects. If only one search type was made (eg just an author), then the whole 
+ * relevant author array must be returned. If a combined search was made, then just the duplicates in
+ * both or all relevant arrays must be returned.
  */
 const handleSearchSubmit = (event) => {
     event.preventDefault()
-    const titleValue = event.target[0].value
+    const titleValue = event.target[0].value.trim()
     const genreID = event.target[1].value
     const authorID = event.target[2].value
 
     const titleArr = []
     const genreArr = []
-    const authorArr = [];
-    
-    if (titleValue) {titleArr.push(titleSearch(titleValue))};
-    if (genreID) {genreArr.push(genreSearch(genreID))};
-    if (authorID) { 
-            authorArr.push(authorSearch(authorID))
+    const authorArr = []
+    const searchResults = []
+
+    if (titleValue) {titleArr.push(titleSearch(titleValue))}
+    if (genreID) {genreArr.push(genreSearch(genreID))}
+    if (authorID) {authorArr.push(authorSearch(authorID))}
+ 
+        for (let i = 0; i < titleArr[0].length; i++){
+            console.log("title for-loop works");
+            console.log(genreArr[0]);
+            for (let book in genreArr[0]){
+                
+                if (JSON.stringify(titleArr[0][i]) === JSON.stringify(genreArr[0][book])){
+                    searchResults.push(titleArr[i])
+                    // titleArr.splice(i, 1)
+                    // genreArr.splice(j, 1)
+                    console.log('if statement works');
+                }
+            }
         }
-         
+        console.log(searchResults);
+    if (titleValue && !genreID && !authorID){
     
-    console.log(genreArr);
+    } else if (titleValue && !genreID && authorID){
     
+    } else if (!titleValue && genreID && authorID){
+    
+    } else if (!titleValue && genreID && !authorID){
 
+    } else if (!titleValue && !genreID && authorID){
 
+    }
+
+    
+    html.search.title.value = ''
+    html.search.authors.value = 'any'
+    html.search.genres.value = 'any'
+    
     handleSearchToggle()
 }
 
@@ -255,10 +290,6 @@ html.settings.form.addEventListener('submit', handleSettingsSubmit)
 // /**
 //  * create some event listeners to toggle dialogues.
 //  */
-
-
-// data-list-close.click() { data-list-active.open === false }
-
 
 
 // data-header-search.click() {
