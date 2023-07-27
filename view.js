@@ -14,10 +14,12 @@ export const html = {
 
         items: document.querySelector('[data-list-items]'),
 
+        blur: document.querySelector('[data-list-blur]'),
         image: document.querySelector('[data-list-image]'),
         title: document.querySelector('[data-list-title]'),
         subtitle: document.querySelector('[data-list-subtitle]'),
         description: document.querySelector('[data-list-description]'),
+        close: document.querySelector('[data-list-close]'),
     },
     search: {
         button: document.querySelector('[data-header-search]'),

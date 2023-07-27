@@ -31,10 +31,11 @@ const createPage = () => {
     const extracted = books.slice(startPosition, endPosition + 1)
 
     for (let i = 0; i < extracted.length; i++) {
-        const { author, image, title, id } = extracted[i]
-        state.loaded[id] = {id, image, author, title}
+        const { author, image, title, id, description, published } = extracted[i]
+        const publish = new Date(published)
+        state.loaded[id] = {id, image, author, title, description, publish}
         const preview = createPreviewHtml(state.loaded[id])
-  
+
         fragment.appendChild(preview)
     }
 
@@ -192,6 +193,7 @@ const handleSearchSubmit = (event) => {
     const genreID = event.target[1].value
     const authorID = event.target[2].value
 
+    console.log(titleValue, genreID, authorID);
     const titleArr = []
     const genreArr = []
     const authorArr = []
@@ -200,14 +202,15 @@ const handleSearchSubmit = (event) => {
     if (titleValue) {titleArr.push(titleSearch(titleValue))}
     if (genreID) {genreArr.push(genreSearch(genreID))}
     if (authorID) {authorArr.push(authorSearch(authorID))}
- 
+    
+    if (titleValue && genreID && authorID) {
+    } else if (titleValue && genreID && !authorID){
         for (let i = 0; i < titleArr[0].length; i++){
-            console.log("title for-loop works");
-            console.log(genreArr[0]);
+
             for (let book in genreArr[0]){
-                
+
                 if (JSON.stringify(titleArr[0][i]) === JSON.stringify(genreArr[0][book])){
-                    searchResults.push(titleArr[i])
+                    searchResults.push(titleArr[0][i])
                     // titleArr.splice(i, 1)
                     // genreArr.splice(j, 1)
                     console.log('if statement works');
@@ -215,10 +218,23 @@ const handleSearchSubmit = (event) => {
             }
         }
         console.log(searchResults);
-    if (titleValue && !genreID && !authorID){
-    
+    } else if (titleValue && !genreID && !authorID){
+        searchResults = titleArr
     } else if (titleValue && !genreID && authorID){
-    
+        console.log('if statement works');
+        for (let i = 0; i < titleArr[0].length; i++){
+
+            for (let book in authorArr[0]){
+
+                if (JSON.stringify(titleArr[0][i]) === JSON.stringify(authorArr[0][book])){
+                    searchResults.push(titleArr[0][i])
+                    // titleArr.splice(i, 1)
+                    // genreArr.splice(j, 1)
+                    console.log('if statement works');
+                }
+            }
+        }
+        console.log(searchResults);
     } else if (!titleValue && genreID && authorID){
     
     } else if (!titleValue && genreID && !authorID){
@@ -261,6 +277,22 @@ const handleSettingsSubmit = (event) => {
     handleSettingsToggle()
 }
 
+const handleItemClick = (event) => {
+    event.preventDefault()
+    const id = event.srcElement.dataset.id;
+    
+    if (id){
+        html.list.overlay.toggleAttribute('open')
+        html.list.blur.setAttribute('src', `${state.loaded[id].image}`)
+        html.list.image.setAttribute('src', `${state.loaded[id].image}`)
+        html.list.title.innerText = `${state.loaded[id].title}`
+        html.list.subtitle.innerText = `${authors[state.loaded[id].author]} (${state.loaded[id].publish.getFullYear()})`
+        html.list.description.innerText = `${state.loaded[id].description}`
+    } else {
+        html.list.overlay.removeAttribute('open')
+    }
+}
+
 html.list.button.addEventListener('click', handleListButton)
 
 html.search.button.addEventListener('click', handleSearchToggle)
@@ -272,6 +304,8 @@ html.settings.cancel.addEventListener('click', handleSettingsToggle)
 html.settings.form.addEventListener('submit', handleSettingsSubmit)
 
 
+html.list.items.addEventListener('click', handleItemClick)
+html.list.close.addEventListener('click', handleItemClick)
 // /** */
 // data-settings-theme.value === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
 // v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' : 'day'
