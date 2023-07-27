@@ -5,6 +5,7 @@
  */
 export const state = {
   pageNumber: null,
+  theme: null,
   loaded: {},
 }
 

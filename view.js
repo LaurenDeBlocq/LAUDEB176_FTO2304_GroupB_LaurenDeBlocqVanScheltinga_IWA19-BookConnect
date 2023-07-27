@@ -1,4 +1,4 @@
-import { state, authors } from "./data.js"
+import { authors } from "./data.js"
 
 /**
  * Attempting to recreate the html object from IWA challenge 18. I
@@ -38,9 +38,9 @@ export const html = {
         theme: document.querySelector('[data-settings-theme]'),
     },
     other: {},
-    authors: {},
-    genres: {},
-    books: {},
+    // authors: {},
+    // genres: {},
+    // books: {},
 }
 
 /** 

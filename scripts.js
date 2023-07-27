@@ -3,6 +3,7 @@ import { html, createPreviewHtml } from "./view.js";
 
 const matches = books
 state.pageNumber = 1;
+state.theme = 'light'
 
 if (!books && !Array.isArray(books)) throw new Error('Source required') 
 //if (!range && range.length < 2) throw new Error('Range must be an array with two numbers')
@@ -29,7 +30,6 @@ const createPage = () => {
     const fragment = document.createDocumentFragment()
     const extracted = books.slice(startPosition, endPosition + 1)
 
-    
     for (let i = 0; i < extracted.length; i++) {
         const { author, image, title, id } = extracted[i]
         state.loaded[id] = {id, image, author, title}
@@ -52,7 +52,7 @@ const listButtonText = () => {
     `
 }
 
-/* -------------------- ON PAGE LOAD --------------------*/
+/* -------------------- ON INIT --------------------*/
 createPage()
 listButtonText()
 
@@ -67,17 +67,46 @@ const handleSearchToggle = (event) =>{
     html.search.overlay.toggleAttribute('open')
 }
 
+const handleSearchSubmit = (event) => {
+    
+    handleSearchToggle()
+}
+
 const handleSettingsToggle = (event) =>{
     html.settings.overlay.toggleAttribute('open')
 }
 
+const handleSettingsSubmit = (event) => {
+    event.preventDefault()
+    const theme = event.srcElement[0].value
+
+    theme === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
+    //v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' : 'day'
+
+
+    if (theme == 'night'){
+        // use the media query css code
+
+    } else {
+        // use the basic css code
+    }
+    
+    // if (event.srcElement[0].value == 'night') {
+    //     console.log("the code runs");
+    //    document.body.style.colorScheme = "dark"
+    // }
+    handleSettingsToggle()
+}
+
 html.list.button.addEventListener('click', handleListButton)
+
 html.search.button.addEventListener('click', handleSearchToggle)
 html.search.cancel.addEventListener('click', handleSearchToggle)
+html.search.form.addEventListener('submit', handleSearchSubmit)
 
 html.settings.button.addEventListener('click', handleSettingsToggle)
 html.settings.cancel.addEventListener('click', handleSettingsToggle)
-// html.settings.form.addEventListener('submit', handleSettingsSubmit)
+html.settings.form.addEventListener('submit', handleSettingsSubmit)
 
 /**
  * Pretty sure this section is about dealing with the "Filter by genre" feature.
@@ -102,15 +131,15 @@ html.settings.cancel.addEventListener('click', handleSettingsToggle)
 // data-search-genres.appendChild(genres)
 
 // /**
-//  * Same as above but for the "Filter by Author" feature.
+//  * Creates list options for the author drop down in Search.
 //  */
-// authors = document.createDocumentFragment()
+// fragment = document.createDocumentFragment()
 // element = document.createElement('option')
 // element.value = 'any'
 // element.innerText = 'All Authors'
 // authors.appendChild(element)
 
-// for ([id, name];Object.entries(authors); id++) {
+// for ([id, name] Object.entries(authors); id++) {
 //     document.createElement('option')
 //     element.value = value
 //     element = text
