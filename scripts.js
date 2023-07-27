@@ -52,10 +52,57 @@ const listButtonText = () => {
     `
 }
 
+/**
+ * Creates list options for the author drop down in Search.
+ */
+const createAuthorOptions = () => {
+    const fragment = document.createDocumentFragment()
+    
+    const option1 = document.createElement('option')
+    option1.value = 'any'
+    option1.innerText = 'All Authors'
+    fragment.appendChild(option1)
+
+    let authorID = Object.keys(authors)
+    authorID.forEach((id) =>{
+        const option = document.createElement('option')
+        option.value = `${id}`
+        option.innerText = authors[`${id}`]
+        fragment.appendChild(option)
+    }
+    )
+
+    html.search.authors.appendChild(fragment)
+}
+
+/**
+ * Creates list options for the genres drop down in Search
+ */
+const createGenreOptions = () => {
+    const fragment = document.createDocumentFragment()
+    
+    const option1 = document.createElement('option')
+    option1.value = 'any'
+    option1.innerText = 'All Genres'
+    fragment.appendChild(option1)
+
+    let genreID = Object.keys(genres)
+    genreID.forEach((id) =>{
+        const option = document.createElement('option')
+        option.value = `${id}`
+        option.innerText = genres[`${id}`]
+        fragment.appendChild(option)
+    }
+    )
+
+    html.search.genres.appendChild(fragment)
+}
+
 /* -------------------- ON INIT --------------------*/
 createPage()
 listButtonText()
-
+createAuthorOptions()
+createGenreOptions()
 
 /* ------------------- EVENT HANDLERS ------------------- */
 const handleListButton = (event) =>{
