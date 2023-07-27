@@ -5,6 +5,8 @@
  */
 export const state = {
   pageNumber: null,
+  isSearching: false,
+  searchResult: null,
   theme: null,
   loaded: {},
 }

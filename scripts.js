@@ -1,7 +1,6 @@
 import { state, BOOKS_PER_PAGE, authors, genres, books } from "./data.js";
 import { html, createPreviewHtml } from "./view.js";
 
-const matches = books
 state.pageNumber = 1;
 state.theme = 'light'
 
@@ -23,12 +22,12 @@ if (!books && !Array.isArray(books)) throw new Error('Source required')
 /**
  * Creates the load out of new books dependant on what page the user is on. 
  */
-const createPage = () => {
+const createPage = (arr) => {
     const startPosition = (state.pageNumber - 1) * BOOKS_PER_PAGE
     const endPosition = startPosition + BOOKS_PER_PAGE - 1
     
     const fragment = document.createDocumentFragment()
-    const extracted = books.slice(startPosition, endPosition + 1)
+    const extracted = arr.slice(startPosition, endPosition + 1)
 
     for (let i = 0; i < extracted.length; i++) {
         const { author, image, title, id, description, published } = extracted[i]
@@ -47,9 +46,9 @@ const createPage = () => {
 /**
  * Fills in the text on the list button.
  */
-const listButtonText = () => {
+const listButtonText = (arr) => {
     html.list.button.innerHTML = `
-    Show More <span class="list__remaining">(${books.length - Object.keys(state.loaded).length})</span>
+    Show More <span class="list__remaining">(${arr.length - Object.keys(state.loaded).length})</span>
     `
 }
 
@@ -100,8 +99,8 @@ const createGenreOptions = () => {
 }
 
 /* -------------------- ON INIT --------------------*/
-createPage()
-listButtonText()
+createPage(books)
+listButtonText(books)
 createAuthorOptions()
 createGenreOptions()
 
@@ -159,16 +158,45 @@ const authorSearch = (authorValue) =>{
     return authorArray
 }
 
+/**
+ * Creates the previews for the search results in the same way 
+ * createPage does when the page initialises. This time it is done through the
+ * searchResults array.
+ */
+// const createSearchResults = (arr) => {
+//     const startPosition = (state.search.pageNumber - 1) * BOOKS_PER_PAGE
+//     const endPosition = startPosition + BOOKS_PER_PAGE - 1
+    
+//     const fragment = document.createDocumentFragment()
+//     const extracted = arr.slice(startPosition, endPosition + 1)
+
+//     for (let i = 0; i < extracted.length; i++) {
+//         const { author, image, title, id, description, published } = extracted[i]
+//         const publish = new Date(published)
+//         state.search.loaded[id] = {id, image, author, title, description, publish}
+//         const preview = createPreviewHtml(state.search.loaded[id])
+
+//         fragment.appendChild(preview)
+//     }
+
+//     state.pageNumber += 1
+//     html.list.items.appendChild(fragment)
+// }
+
+
 
 
 /* ------------------- EVENT HANDLERS ------------------- */
 const handleListButton = (event) =>{
-    createPage()
-    listButtonText()
+    createPage(state.isSearching ? state.searchResult : books)
+    listButtonText(state.isSearching ? state.searchResult : books)
 }
 
 const handleSearchToggle = (event) =>{
     html.search.overlay.toggleAttribute('open')
+    html.search.title.value = ''
+    html.search.authors.value = 'any'
+    html.search.genres.value = 'any'
 }
 
 /**
@@ -192,62 +220,83 @@ const handleSearchSubmit = (event) => {
     const titleValue = event.target[0].value.trim()
     const genreID = event.target[1].value
     const authorID = event.target[2].value
+    state.pageNumber = 1
+    state.searchResult = []
+    state.loaded = {}
+    state.isSearching = true
 
-    console.log(titleValue, genreID, authorID);
     const titleArr = []
     const genreArr = []
     const authorArr = []
     const searchResults = []
 
-    if (titleValue) {titleArr.push(titleSearch(titleValue))}
-    if (genreID) {genreArr.push(genreSearch(genreID))}
-    if (authorID) {authorArr.push(authorSearch(authorID))}
-    
-    if (titleValue && genreID && authorID) {
-    } else if (titleValue && genreID && !authorID){
-        for (let i = 0; i < titleArr[0].length; i++){
+    if (titleValue) {for (const element in titleSearch(titleValue)){titleArr.push(titleSearch(titleValue)[element])}}
+    if (genreID && genreID !== 'any') {for (const element in genreSearch(genreID)){genreArr.push(genreSearch(genreID)[element])}}
+    if (authorID && authorID !== 'any') {for (const element in authorSearch(authorID)){authorArr.push(authorSearch(authorID)[element])}}
 
-            for (let book in genreArr[0]){
+    const titleSearched = titleArr.length > 0
+    const genreSearched = genreArr.length > 0
+    const authorSearched = authorArr.length > 0
+/*
+Things get a bit complicated here. Essentially what this stack of else-if statements does
+is compare all possible combinations of search values to create the search results based 
+off the relevant search requirements (ie if title and genre are searched, it only compares
+    title and genre arrays)
+*/
+    if (titleSearched && genreSearched && authorSearched) {
+        console.log('Panic');
 
-                if (JSON.stringify(titleArr[0][i]) === JSON.stringify(genreArr[0][book])){
-                    searchResults.push(titleArr[0][i])
-                    // titleArr.splice(i, 1)
-                    // genreArr.splice(j, 1)
-                    console.log('if statement works');
-                }
-            }
+    } else if (titleSearched && genreSearched && !authorSearched){
+        const results = genreArr.filter((elem) => {
+            return titleArr.some((ele) => {
+            return ele.id === elem.id});
+            });
+        for (const element in results){searchResults.push(results[element])}
+
+    } else if (titleSearched && !genreSearched && !authorSearched){
+        for (const element in titleArr){
+            searchResults.push(titleArr[element])
         }
-        console.log(searchResults);
-    } else if (titleValue && !genreID && !authorID){
-        searchResults = titleArr
-    } else if (titleValue && !genreID && authorID){
-        console.log('if statement works');
-        for (let i = 0; i < titleArr[0].length; i++){
+    } else if (titleSearched && !genreSearched && authorSearched){
+        const results = authorArr.filter((elem) => {
+            return titleArr.some((ele) => {
+            return ele.id === elem.id});
+            });
+        for (const element in results){searchResults.push(results[element])}
 
-            for (let book in authorArr[0]){
-
-                if (JSON.stringify(titleArr[0][i]) === JSON.stringify(authorArr[0][book])){
-                    searchResults.push(titleArr[0][i])
-                    // titleArr.splice(i, 1)
-                    // genreArr.splice(j, 1)
-                    console.log('if statement works');
-                }
-            }
+    } else if (!titleSearched && genreSearched && authorSearched){
+        const results = authorArr.filter((elem) => {
+            return genreArr.some((ele) => {
+            return ele.id === elem.id});
+            });
+        for (const element in results){searchResults.push(results[element])}
+    } else if (!titleSearched && genreSearched && !authorSearched){
+        for (const element in genreArr){
+            searchResults.push(genreArr[element])
         }
-        console.log(searchResults);
-    } else if (!titleValue && genreID && authorID){
+    } else if (!titleSearched && !genreSearched && authorSearched){
+        for (const element in authorArr){
+            searchResults.push(authorArr[element])
+        }
+    } else if (!titleSearched && !genreSearched && !authorSearched){
+        return
+    }
     
-    } else if (!titleValue && genreID && !authorID){
+    console.log(searchResults);
+    /* Now we deal with the existing previews */
+    
+    while (html.list.items.hasChildNodes()) {
+      html.list.items.removeChild(html.list.items.firstChild);
+    }
+    console.log(typeof state.searchResult);
 
-    } else if (!titleValue && !genreID && authorID){
-
+    for (const element in searchResults){
+        state.searchResult.push(searchResults[element])
     }
 
-    
-    html.search.title.value = ''
-    html.search.authors.value = 'any'
-    html.search.genres.value = 'any'
-    
+   
+    createPage(state.searchResult)
+    listButtonText(state.searchResult)
     handleSearchToggle()
 }
 
@@ -424,3 +473,29 @@ html.list.close.addEventListener('click', handleItemClick)
 //     data-list-subtitle === '${authors[active.author]} (${Date(active.published).year})'
 //     data-list-description === active.description
 // }
+
+
+
+
+
+    // console.log(authorArr, titleArr);
+    // const results = authorArr.filter((elem) => {
+    //     return titleArr.some((ele) => {
+    //     return ele.id === elem.id});
+    //     });
+    // results.forEach(searchResults.push())
+    // console.log(searchResults)
+    // createSearchResults(searchResults)
+    
+    // for (let i = 0; i < titleArr.length; i++){
+
+    //     for (let book in genreArr){
+
+    //         if (JSON.stringify(titleArr[i]) === JSON.stringify(genreArr[book])){
+    //             searchResults.push(titleArr[i])
+    //             // titleArr.splice(i, 1)
+    //             // genreArr.splice(j, 1)
+    //             console.log('if statement works');
+    //         }
+    //     }
+    // }
