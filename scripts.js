@@ -104,6 +104,54 @@ listButtonText()
 createAuthorOptions()
 createGenreOptions()
 
+/* -------------------- SEARCH FEATURE -------------------- */
+/**
+ * Takes in a value and searches through the books Array to find partial
+ * and full matches. Returns an array with those matches.
+ */
+const titleSearch = (titleValue) =>{
+
+}
+
+/**
+ *  Takes in a string id relating to a genre. Loops through the Books array and
+ *  stores any books with a matching genre id in a new array. Returns the 
+ *  matching books
+ */
+const genreSearch = (genreValue) =>{
+    const genreArray = []
+
+    for (let i = 0; i < books.length; i++ ) {
+        const bookGenres = books[i]['genres']
+        for (let j = 0; j < bookGenres.length; j++){
+            if (bookGenres[j] === genreValue){
+                genreArray.push(books[i])
+            }
+        }
+    }
+
+    return genreArray
+}
+
+/**
+ * Takes in an id relating to a author. Loops through the Books array and
+ * stores any books with a matching author id in a new array. Returns the 
+ * matching books 
+ */
+const authorSearch = (authorValue) =>{
+    const authorArray = []
+
+    for (let i = 0; i < books.length; i++ ) {
+        if (books[i]['author'] === authorValue){
+            authorArray.push(books[i])
+        }
+    
+    }
+    
+    return authorArray
+}
+
+
 /* ------------------- EVENT HANDLERS ------------------- */
 const handleListButton = (event) =>{
     createPage()
@@ -114,8 +162,41 @@ const handleSearchToggle = (event) =>{
     html.search.overlay.toggleAttribute('open')
 }
 
+/**
+ * This handler is going to be a bit more tricky. Fundamentally, it breaks down into 4 components:
+ * 1. If there is a value in the title input, then we need to loop through the books array to find
+ *    a match. However, we also need to find partial matches, not just exact matches.
+ * 
+ * 2. If there is a value in the genre input, we gotta loop through the 'genres' property in the 
+ *    individual books objects in the books array and return all books with that genre.
+ * 
+ * 3. If there is a value in the author input, we must loop through the 'author; property in each 
+ *    individual books object in the books array and return all books with that author.
+ * 
+ * Lastly, we must compare the different book objects returned, remove any duplicates and create a 
+ * page using those objects
+ */
 const handleSearchSubmit = (event) => {
+    event.preventDefault()
+    const titleValue = event.target[0].value
+    const genreID = event.target[1].value
+    const authorID = event.target[2].value
+
+    const titleArr = []
+    const genreArr = []
+    const authorArr = [];
     
+    if (titleValue) {titleArr.push(titleSearch(titleValue))};
+    if (genreID) {genreArr.push(genreSearch(genreID))};
+    if (authorID) { 
+            authorArr.push(authorSearch(authorID))
+        }
+         
+    
+    console.log(genreArr);
+    
+
+
     handleSearchToggle()
 }
 
@@ -155,45 +236,6 @@ html.settings.button.addEventListener('click', handleSettingsToggle)
 html.settings.cancel.addEventListener('click', handleSettingsToggle)
 html.settings.form.addEventListener('submit', handleSettingsSubmit)
 
-/**
- * Pretty sure this section is about dealing with the "Filter by genre" feature.
- * Seems like the idea is to make the list of genres and not so much the actual
- * search functionality.
- */
-
-
-// genres = document.createDocumentFragment()
-// element = document.createElement('option')
-// element.value = 'any'
-// element = 'All Genres'
-// genres.appendChild(element)
-
-// for ([id, name]; Object.entries(genres); i++) {
-//     document.createElement('option')
-//     element.value = value
-//     element.innerText = text
-//     genres.appendChild(element)
-// }
-
-// data-search-genres.appendChild(genres)
-
-// /**
-//  * Creates list options for the author drop down in Search.
-//  */
-// fragment = document.createDocumentFragment()
-// element = document.createElement('option')
-// element.value = 'any'
-// element.innerText = 'All Authors'
-// authors.appendChild(element)
-
-// for ([id, name] Object.entries(authors); id++) {
-//     document.createElement('option')
-//     element.value = value
-//     element = text
-//     authors.appendChild(element)
-// }
-
-// data-search-authors.appendChild(authors)
 
 // /** */
 // data-settings-theme.value === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'

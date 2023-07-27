@@ -12,3 +12,5 @@ PD = Previous Developer
 5. No event handlers were made, therefore the page was not interactive. Handler's to deal with various overlays, buttons, and list items have been created. PD was attempting to create these using .click() or .submit() etc which don't exist.
 
 6. There is already existing CSS to deal with the day vs night (ie dark mode). PD should have just applied the class instead of trying to make a new thing in JS.
+
+7. Created the drop down list for Genres and Authors in the Search feature.
