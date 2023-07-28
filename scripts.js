@@ -7,15 +7,20 @@ state.theme = 'light'
 if (!books && !Array.isArray(books)) throw new Error('Source required') 
 //if (!range && range.length < 2) throw new Error('Range must be an array with two numbers')
 
-// day = {
-//     dark: '10, 10, 20',
-//     light: '255, 255, 255',
-// }
+const themeCSS = {
+    day :{
+        dark: '10, 10, 20',
+        light: '255, 255, 255',
+    },
+    night :{
+        dark: '255, 255, 255',
+        light: '10, 10, 20',
+    }
+}
 
-// night = {
-//     dark: '255, 255, 255',
-//     light: '10, 10, 20',
-// }
+ 
+
+
 
 /* -------------------- Functions which affect the page -------------------- */
 
@@ -47,10 +52,17 @@ const createPage = (arr) => {
  * Fills in the text on the list button.
  */
 const listButtonText = (arr) => {
-    html.list.button.innerHTML = `
-    Show More <span class="list__remaining">(${arr.length - Object.keys(state.loaded).length})</span>
+    if (arr.length === 0){
+        html.list.button.disabled = true
+        html.list.button.innerHTML = `
+    Show More <span class="list__remaining">(${0})</span>
     `
-}
+    } else {
+        html.list.button.disabled = false
+        html.list.button.innerHTML = `
+        Show More <span class="list__remaining">(${arr.length - Object.keys(state.loaded).length})</span>`
+    }}
+
 
 /**
  * Creates list options for the author drop down in Search.
@@ -104,85 +116,9 @@ listButtonText(books)
 createAuthorOptions()
 createGenreOptions()
 
-/* -------------------- SEARCH FEATURE -------------------- */
-/**
- * Takes in a value and searches through the books Array to find partial
- * and full matches. Returns an array with those matches.
- */
-const titleSearch = (titleValue) =>{
-    const titleArray = []
-
-    for (let i = 0; i < books.length; i++){
-        if (books[i]['title'].toLowerCase().includes(titleValue.toLowerCase())){
-            titleArray.push(books[i])
-        }
-    }
-
-    return titleArray
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+    state.theme = 'night'
 }
-
-/**
- *  Takes in a string id relating to a genre. Loops through the Books array and
- *  stores any books with a matching genre id in a new array. Returns the 
- *  matching books
- */
-const genreSearch = (genreValue) =>{
-    const genreArray = []
-
-    for (let i = 0; i < books.length; i++ ) {
-        const bookGenres = books[i]['genres']
-        for (let j = 0; j < bookGenres.length; j++){
-            if (bookGenres[j] === genreValue){
-                genreArray.push(books[i])
-            }
-        }
-    }
-
-    return genreArray
-}
-
-/**
- * Takes in an id relating to a author. Loops through the Books array and
- * stores any books with a matching author id in a new array. Returns the 
- * matching books 
- */
-const authorSearch = (authorValue) =>{
-    const authorArray = []
-
-    for (let i = 0; i < books.length; i++ ) {
-        if (books[i]['author'] === authorValue){
-            authorArray.push(books[i])
-        }
-    }
-    
-    return authorArray
-}
-
-/**
- * Creates the previews for the search results in the same way 
- * createPage does when the page initialises. This time it is done through the
- * searchResults array.
- */
-// const createSearchResults = (arr) => {
-//     const startPosition = (state.search.pageNumber - 1) * BOOKS_PER_PAGE
-//     const endPosition = startPosition + BOOKS_PER_PAGE - 1
-    
-//     const fragment = document.createDocumentFragment()
-//     const extracted = arr.slice(startPosition, endPosition + 1)
-
-//     for (let i = 0; i < extracted.length; i++) {
-//         const { author, image, title, id, description, published } = extracted[i]
-//         const publish = new Date(published)
-//         state.search.loaded[id] = {id, image, author, title, description, publish}
-//         const preview = createPreviewHtml(state.search.loaded[id])
-
-//         fragment.appendChild(preview)
-//     }
-
-//     state.pageNumber += 1
-//     html.list.items.appendChild(fragment)
-// }
-
 
 
 
@@ -228,71 +164,30 @@ const handleSearchSubmit = (event) => {
     const titleArr = []
     const genreArr = []
     const authorArr = []
-    const searchResults = []
+    const searchResults = books.filter(book => {
+        const titleCheck = titleValue === '' ? true : book['title'].toLowerCase().includes(titleValue.toLowerCase())
+        const genreCheck =  genreID === 'any' ? true: book['genres'].includes(genreID)
+        const authorCheck = authorID ==='any' ? true : book['author'] === authorID
 
-    if (titleValue) {for (const element in titleSearch(titleValue)){titleArr.push(titleSearch(titleValue)[element])}}
-    if (genreID && genreID !== 'any') {for (const element in genreSearch(genreID)){genreArr.push(genreSearch(genreID)[element])}}
-    if (authorID && authorID !== 'any') {for (const element in authorSearch(authorID)){authorArr.push(authorSearch(authorID)[element])}}
+        return titleCheck && genreCheck && authorCheck
+    })
 
-    const titleSearched = titleArr.length > 0
-    const genreSearched = genreArr.length > 0
-    const authorSearched = authorArr.length > 0
-/*
-Things get a bit complicated here. Essentially what this stack of else-if statements does
-is compare all possible combinations of search values to create the search results based 
-off the relevant search requirements (ie if title and genre are searched, it only compares
-    title and genre arrays)
-*/
-    if (titleSearched && genreSearched && authorSearched) {
-        console.log('Panic');
 
-    } else if (titleSearched && genreSearched && !authorSearched){
-        const results = genreArr.filter((elem) => {
-            return titleArr.some((ele) => {
-            return ele.id === elem.id});
-            });
-        for (const element in results){searchResults.push(results[element])}
-
-    } else if (titleSearched && !genreSearched && !authorSearched){
-        for (const element in titleArr){
-            searchResults.push(titleArr[element])
-        }
-    } else if (titleSearched && !genreSearched && authorSearched){
-        const results = authorArr.filter((elem) => {
-            return titleArr.some((ele) => {
-            return ele.id === elem.id});
-            });
-        for (const element in results){searchResults.push(results[element])}
-
-    } else if (!titleSearched && genreSearched && authorSearched){
-        const results = authorArr.filter((elem) => {
-            return genreArr.some((ele) => {
-            return ele.id === elem.id});
-            });
-        for (const element in results){searchResults.push(results[element])}
-    } else if (!titleSearched && genreSearched && !authorSearched){
-        for (const element in genreArr){
-            searchResults.push(genreArr[element])
-        }
-    } else if (!titleSearched && !genreSearched && authorSearched){
-        for (const element in authorArr){
-            searchResults.push(authorArr[element])
-        }
-    } else if (!titleSearched && !genreSearched && !authorSearched){
-        return
-    }
     
-    console.log(searchResults);
     /* Now we deal with the existing previews */
-    
     while (html.list.items.hasChildNodes()) {
       html.list.items.removeChild(html.list.items.firstChild);
     }
-    console.log(typeof state.searchResult);
 
+    if (searchResults.length == 0){
+        listButtonText(searchResults)
+        handleSearchToggle()
+        html.list.message.style.display = 'block'
+        return
+    } else{
     for (const element in searchResults){
         state.searchResult.push(searchResults[element])
-    }
+    }}
 
    
     createPage(state.searchResult)
@@ -302,22 +197,34 @@ off the relevant search requirements (ie if title and genre are searched, it onl
 
 const handleSettingsToggle = (event) =>{
     html.settings.overlay.toggleAttribute('open')
+    html.settings.theme = state.theme
 }
 
 const handleSettingsSubmit = (event) => {
     event.preventDefault()
-    const theme = event.srcElement[0].value
+    const theme = event.target[0].value
+    console.log(event);
 
-    theme === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
-    //v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' : 'day'
-
-
-    if (theme == 'night'){
-        // use the media query css code
-
+    if (theme === 'night'){    
+        state.theme = 'dark'
     } else {
-        // use the basic css code
+        state.theme = 'light'
     }
+
+    // theme === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
+    
+
+    document.documentElement.style.setProperty('--color-dark',  themeCSS[theme].dark);
+    document.documentElement.style.setProperty('--color-light', themeCSS[theme].light);
+
+    // documentElement.style.setProperty('--color-light', css[v].light);
+    
+
+    // if (theme == 'night'){
+    //     document.st
+    // } else {
+    //     // use the basic css code
+    // }
     
     // if (event.srcElement[0].value == 'night') {
     //     console.log("the code runs");
@@ -499,3 +406,121 @@ html.list.close.addEventListener('click', handleItemClick)
     //         }
     //     }
     // }
+
+
+    // /* -------------------- SEARCH FEATURE -------------------- */
+    // /**
+    //  * Takes in a value and searches through the books Array to find partial
+    //  * and full matches. Returns an array with those matches.
+    //  */
+    // const titleSearch = (titleValue) =>{
+    //     const titleArray = []
+    
+    //     for (let i = 0; i < books.length; i++){
+    //         if (books[i]['title'].toLowerCase().includes(titleValue.toLowerCase())){
+    //             titleArray.push(books[i])
+    //         }
+    //     }
+    
+    //     return titleArray
+    // }
+    
+    // /**
+    //  *  Takes in a string id relating to a genre. Loops through the Books array and
+    //  *  stores any books with a matching genre id in a new array. Returns the 
+    //  *  matching books
+    //  */
+    // const genreSearch = (genreValue) =>{
+    //     const genreArray = []
+    
+    //     for (let i = 0; i < books.length; i++ ) {
+    //         const bookGenres = books[i]['genres']
+    //         for (let j = 0; j < bookGenres.length; j++){
+    //             if (bookGenres[j] === genreValue){
+    //                 genreArray.push(books[i])
+    //             }
+    //         }
+    //     }
+    
+    //     return genreArray
+    // }
+    
+    /**
+     * Takes in an id relating to a author. Loops through the Books array and
+     * stores any books with a matching author id in a new array. Returns the 
+     * matching books 
+     */
+    const authorSearch = (authorValue) =>{
+        const authorArray = []
+    
+        for (let i = 0; i < books.length; i++ ) {
+            if (books[i]['author'] === authorValue){
+                authorArray.push(books[i])
+            }
+        }
+        
+        return authorArray
+    }
+    
+
+    //     if (titleValue) {for (const element in titleSearch(titleValue)){titleArr.push(titleSearch(titleValue)[element])}}
+//     if (genreID && genreID !== 'any') {for (const element in genreSearch(genreID)){genreArr.push(genreSearch(genreID)[element])}}
+//     if (authorID && authorID !== 'any') {for (const element in authorSearch(authorID)){authorArr.push(authorSearch(authorID)[element])}}
+
+//     const titleSearched = titleArr.length > 0
+//     const genreSearched = genreArr.length > 0
+//     const authorSearched = authorArr.length > 0
+// /*
+// Things get a bit complicated here. Essentially what this stack of else-if statements does
+// is compare all possible combinations of search values to create the search results based 
+// off the relevant search requirements (ie if title and genre are searched, it only compares
+//     title and genre arrays)
+// */
+//     if (titleSearched && genreSearched && authorSearched) {
+//         console.log('Panic');
+//         const someResults = genreArr.filter((elem) => {
+//             return titleArr.some((ele) => {
+//             return ele.id === elem.id});
+//             });
+//         const results = authorArr.filter((elem) => {
+//             return someResults.some((ele) => {
+//             return ele.id === elem.id});
+//             });
+//         for (const element in results){searchResults.push(results[element])}
+
+//     } else if (titleSearched && genreSearched && !authorSearched){
+//         const results = genreArr.filter((elem) => {
+//             return titleArr.some((ele) => {
+//             return ele.id === elem.id});
+//             });
+//         for (const element in results){searchResults.push(results[element])}
+
+//     } else if (titleSearched && !genreSearched && !authorSearched){
+//         for (const element in titleArr){
+//             searchResults.push(titleArr[element])
+//         }
+//     } else if (titleSearched && !genreSearched && authorSearched){
+//         const results = authorArr.filter((elem) => {
+//             return titleArr.some((ele) => {
+//             return ele.id === elem.id});
+//             });
+//         for (const element in results){searchResults.push(results[element])}
+
+//     } else if (!titleSearched && genreSearched && authorSearched){
+//         const results = authorArr.filter((elem) => {
+//             return genreArr.some((ele) => {
+//             return ele.id === elem.id});
+//             });
+//         for (const element in results){searchResults.push(results[element])}
+
+//     } else if (!titleSearched && genreSearched && !authorSearched){
+//         for (const element in genreArr){
+//             searchResults.push(genreArr[element])
+//         }
+//     } else if (!titleSearched && !genreSearched && authorSearched){
+//         for (const element in authorArr){
+//             searchResults.push(authorArr[element])
+//         }
+//     } else if (!titleSearched && !genreSearched && !authorSearched){
+//         return handleSearchToggle()
+//     }
