@@ -209,7 +209,6 @@ const handleSettingsToggle = (event) =>{
 const handleSettingsSubmit = (event) => {
     event.preventDefault()
     const theme = event.target[0].value
-    console.log(event);
 
     if (theme === 'night'){    
         state.theme = 'dark'
