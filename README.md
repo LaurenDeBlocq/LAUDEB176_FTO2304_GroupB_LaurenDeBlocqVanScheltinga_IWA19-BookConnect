@@ -14,3 +14,5 @@ PD = Previous Developer
 6. There is already existing CSS to deal with the day vs night (ie dark mode). PD should have just applied the class instead of trying to make a new thing in JS.
 
 7. Created the drop down list for Genres and Authors in the Search feature.
+
+8. I made the choice to clear the form between searches as I think it makes more sense to be starting with a fresh form. This is an easily reversed decision.
