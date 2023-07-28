@@ -5,7 +5,6 @@ state.pageNumber = 1;
 state.theme = 'light'
 
 if (!books && !Array.isArray(books)) throw new Error('Source required') 
-//if (!range && range.length < 2) throw new Error('Range must be an array with two numbers')
 
 const themeCSS = {
     day :{
@@ -18,14 +17,29 @@ const themeCSS = {
     }
 }
 
- 
-
 
 
 /* -------------------- Functions which affect the page -------------------- */
+/**
+ * Fills in the text on the list button.
+ */
+const listButtonText = (arr) => {
+    if (arr.length === 0){
+        html.list.button.disabled = true
+        html.list.button.innerHTML = `
+    Show More <span class="list__remaining">(${0})</span>
+    `
+    } else {
+        html.list.button.disabled = false
+        html.list.button.innerHTML = `
+        Show More <span class="list__remaining">(${arr.length - Object.keys(state.loaded).length})</span>`
+    }
+}
+
 
 /**
- * Creates the load out of new books dependant on what page the user is on. 
+ * Creates the load out of new books dependant on what page the user is on and
+ * updates the button text.
  */
 const createPage = (arr) => {
     const startPosition = (state.pageNumber - 1) * BOOKS_PER_PAGE
@@ -45,23 +59,8 @@ const createPage = (arr) => {
 
     state.pageNumber += 1
     html.list.items.appendChild(fragment)
+    listButtonText(arr)
 }
-
-
-/**
- * Fills in the text on the list button.
- */
-const listButtonText = (arr) => {
-    if (arr.length === 0){
-        html.list.button.disabled = true
-        html.list.button.innerHTML = `
-    Show More <span class="list__remaining">(${0})</span>
-    `
-    } else {
-        html.list.button.disabled = false
-        html.list.button.innerHTML = `
-        Show More <span class="list__remaining">(${arr.length - Object.keys(state.loaded).length})</span>`
-    }}
 
 
 /**
@@ -87,6 +86,7 @@ const createAuthorOptions = () => {
     html.search.authors.appendChild(fragment)
 }
 
+
 /**
  * Creates list options for the genres drop down in Search
  */
@@ -110,9 +110,11 @@ const createGenreOptions = () => {
     html.search.genres.appendChild(fragment)
 }
 
+
 /* -------------------- ON INIT --------------------*/
+/* The collection of functions that are required to load up the 
+   app. A page must be created, button text  */
 createPage(books)
-listButtonText(books)
 createAuthorOptions()
 createGenreOptions()
 
@@ -123,11 +125,18 @@ if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').match
 
 
 /* ------------------- EVENT HANDLERS ------------------- */
+/**
+ * When clicked, a new page is loaded and the text on the button updates to
+ * the appropriate values.
+ */
 const handleListButton = (event) =>{
     createPage(state.isSearching ? state.searchResult : books)
-    listButtonText(state.isSearching ? state.searchResult : books)
 }
 
+
+/**
+ * Toggles the search overlay and clears the form values between searches.
+ */
 const handleSearchToggle = (event) =>{
     html.search.overlay.toggleAttribute('open')
     html.search.title.value = ''
@@ -135,21 +144,10 @@ const handleSearchToggle = (event) =>{
     html.search.genres.value = 'any'
 }
 
+
 /**
- * This handler is going to be a bit more tricky. Fundamentally, it breaks down into 4 components:
- * 1. If there is a value in the title input, then we need to loop through the books array to find
- *    a match. However, we also need to find partial matches, not just exact matches.
- * 
- * 2. If there is a value in the genre input, we gotta loop through the 'genres' property in the 
- *    individual books objects in the books array and return all books with that genre.
- * 
- * 3. If there is a value in the author input, we must loop through the 'author; property in each 
- *    individual books object in the books array and return all books with that author.
- * 
- * Lastly, we must compare the different book objects returned, and create a 
- * page using those objects. If only one search type was made (eg just an author), then the whole 
- * relevant author array must be returned. If a combined search was made, then just the duplicates in
- * both or all relevant arrays must be returned.
+ * Takes in search values, creates an array of books that match those 
+ * values and then creates the previews for the books.
  */
 const handleSearchSubmit = (event) => {
     event.preventDefault()
@@ -161,9 +159,9 @@ const handleSearchSubmit = (event) => {
     state.loaded = {}
     state.isSearching = true
 
-    const titleArr = []
-    const genreArr = []
-    const authorArr = []
+    /** 
+     *  searchResults stores all the book results that match the search requirements.
+     */
     const searchResults = books.filter(book => {
         const titleCheck = titleValue === '' ? true : book['title'].toLowerCase().includes(titleValue.toLowerCase())
         const genreCheck =  genreID === 'any' ? true: book['genres'].includes(genreID)
@@ -171,35 +169,43 @@ const handleSearchSubmit = (event) => {
 
         return titleCheck && genreCheck && authorCheck
     })
-
-
     
-    /* Now we deal with the existing previews */
+    /* Now we remove the existing previews so we can later replace them with
+    previews for the search results */
     while (html.list.items.hasChildNodes()) {
       html.list.items.removeChild(html.list.items.firstChild);
     }
 
+    /* If no search results were returned, then a message is displayed.
+    Otherwise, the search results are pushed to the state so that they 
+    can be kept track of. */
     if (searchResults.length == 0){
         listButtonText(searchResults)
         handleSearchToggle()
         html.list.message.style.display = 'block'
         return
-    } else{
+    } else {
     for (const element in searchResults){
         state.searchResult.push(searchResults[element])
     }}
 
    
     createPage(state.searchResult)
-    listButtonText(state.searchResult)
     handleSearchToggle()
 }
 
+/**
+ * Toggles the settings menu
+ */
 const handleSettingsToggle = (event) =>{
     html.settings.overlay.toggleAttribute('open')
     html.settings.theme = state.theme
 }
 
+/**
+ * Changes the theme dependent on what the user has chosen.
+ * Also stores the choice in the state to be kept track of.
+ */
 const handleSettingsSubmit = (event) => {
     event.preventDefault()
     const theme = event.target[0].value
@@ -211,28 +217,16 @@ const handleSettingsSubmit = (event) => {
         state.theme = 'light'
     }
 
-    // theme === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
-    
-
     document.documentElement.style.setProperty('--color-dark',  themeCSS[theme].dark);
     document.documentElement.style.setProperty('--color-light', themeCSS[theme].light);
 
-    // documentElement.style.setProperty('--color-light', css[v].light);
-    
-
-    // if (theme == 'night'){
-    //     document.st
-    // } else {
-    //     // use the basic css code
-    // }
-    
-    // if (event.srcElement[0].value == 'night') {
-    //     console.log("the code runs");
-    //    document.body.style.colorScheme = "dark"
-    // }
     handleSettingsToggle()
 }
 
+/**
+ * Creates and toggles a more detailed preview of a book if the user wishes
+ * to view some extra details. 
+ */
 const handleItemClick = (event) => {
     event.preventDefault()
     const id = event.srcElement.dataset.id;
@@ -250,6 +244,8 @@ const handleItemClick = (event) => {
 }
 
 html.list.button.addEventListener('click', handleListButton)
+html.list.items.addEventListener('click', handleItemClick)
+html.list.close.addEventListener('click', handleItemClick)
 
 html.search.button.addEventListener('click', handleSearchToggle)
 html.search.cancel.addEventListener('click', handleSearchToggle)
@@ -260,8 +256,6 @@ html.settings.cancel.addEventListener('click', handleSettingsToggle)
 html.settings.form.addEventListener('submit', handleSettingsSubmit)
 
 
-html.list.items.addEventListener('click', handleItemClick)
-html.list.close.addEventListener('click', handleItemClick)
 // /** */
 // data-settings-theme.value === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
 // v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' : 'day'
