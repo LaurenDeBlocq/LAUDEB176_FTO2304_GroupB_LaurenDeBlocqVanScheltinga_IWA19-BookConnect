@@ -53,7 +53,6 @@ const createPage = (arr) => {
         const publish = new Date(published)
         state.loaded[id] = {id, image, author, title, description, publish}
         const preview = createPreviewHtml(state.loaded[id])
-
         fragment.appendChild(preview)
     }
 
@@ -230,19 +229,31 @@ const handleSettingsSubmit = (event) => {
  */
 const handleItemClick = (event) => {
     event.preventDefault()
-    const id = event.srcElement.dataset.id;
+    let idValue = null
+
+    if (['preview', 'preview__image', 'preview__info', 'preview__author', 'preview__title'].includes(event.srcElement.classList[0])){
+        
+        const path = event.path || event.composedPath()
+        for (const element of path) {
+            const { id } = element.dataset
+            if (id) {
+                idValue = id
+                break;
+            }
+        }
+        //const id = event.srcElement.dataset.id;
     
-    if (id){
         html.list.overlay.toggleAttribute('open')
-        html.list.blur.setAttribute('src', `${state.loaded[id].image}`)
-        html.list.image.setAttribute('src', `${state.loaded[id].image}`)
-        html.list.title.innerText = `${state.loaded[id].title}`
-        html.list.subtitle.innerText = `${authors[state.loaded[id].author]} (${state.loaded[id].publish.getFullYear()})`
-        html.list.description.innerText = `${state.loaded[id].description}`
+        html.list.blur.setAttribute('src', `${state.loaded[idValue].image}`)
+        html.list.image.setAttribute('src', `${state.loaded[idValue].image}`)
+        html.list.title.innerText = `${state.loaded[idValue].title}`
+        html.list.subtitle.innerText = `${authors[state.loaded[idValue].author]} (${state.loaded[idValue].publish.getFullYear()})`
+        html.list.description.innerText = `${state.loaded[idValue].description}`
     } else {
         html.list.overlay.removeAttribute('open')
     }
 }
+
 
 html.list.button.addEventListener('click', handleListButton)
 html.list.items.addEventListener('click', handleItemClick)
