@@ -184,6 +184,7 @@ const handleSearchSubmit = (event) => {
         html.list.message.style.display = 'block'
         return
     } else {
+        html.list.message.style.display = 'none'
     for (const element in searchResults){
         state.searchResult.push(searchResults[element])
     }}
